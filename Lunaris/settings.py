@@ -122,3 +122,9 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+import os
+
+# Añadir la configuración de la carpeta media
+MEDIA_URL = '/media/'  # Esta es la URL base para acceder a los archivos subidos
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Aquí es donde se almacenarán los archivos subidos
