@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Partitura</title>
+</head>
+<body>
+    <h1>Subir Partitura</h1>
+    
+    <form action="{% url 'partiture' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <label for="titulo">Título de la Partitura:</label>
+        <input type="text" id="titulo" name="titulo" required><br><br>
+
+        <label for="autor">Autor:</label>
+        <input type="text" id="autor" name="autor"><br><br>
+
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" name="descripcion"></textarea><br><br>
+
+        <label for="archivo">Subir Partitura (MusicXML):</label>
+        <input type="file" id="archivo" name="archivo" accept=".xml" required><br><br>
+
+        <button type="submit">Subir Partitura</button>
+    </form>
+</body>
+</html>
