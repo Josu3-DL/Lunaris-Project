@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth import authenticate,login
 from rest_framework_simplejwt.tokens import RefreshToken 
+from .models import Partitura
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,3 +51,12 @@ class LoginSerializer(serializers.Serializer):
             'access': str(refresh.access_token),
             }
         
+class PartitureSetrializer(serializers.ModelSerializer):
+      class Meta:
+          model = Partitura
+          fields = ['titulo','autor','descripcion','archivo','user','time_signature','clef','key_signature']
+          readonlyfields = ['notas_transpuestas','notas_normales','time_signature','clef','key_signature']
+          
+      
+      def create(self, validated_data):
+           return Partitura.objects.create(**validated_data)
