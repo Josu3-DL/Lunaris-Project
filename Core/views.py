@@ -25,7 +25,7 @@ class UserViewsets(viewsets.ModelViewSet):
 class PartitureViewsets(viewsets.ModelViewSet):
     queryset = Partitura.objects.all()
     serializer_class = PartitureSetrializer
-    permission_classes = [AllowAny] # esto es para que pueda acceder sin necesidad de estar autenticado
+    permission_classes = [IsAuthenticated] 
     authentication_classes = [BasicAuthentication]
 
     def perform_create(self, serializer):
