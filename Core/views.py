@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import UserSerializer,LoginSerializer,PartitureSetrializer
+from .serializers import UserSerializer,LoginSerializer,PartitureSerializer
 from django.contrib.auth.models import User
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +9,8 @@ from rest_framework import generics
 from .models import Partitura
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny 
+from rest_framework.decorators import action
+from rest_framework.views import APIView
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -24,8 +26,9 @@ class UserViewsets(viewsets.ModelViewSet):
 
 class PartitureViewsets(viewsets.ModelViewSet):
     queryset = Partitura.objects.all()
-    serializer_class = PartitureSetrializer
-    permission_classes = [IsAuthenticated] 
+    serializer_class = PartitureSerializer
+    #permission_classes = [IsAuthenticated] 
+    permission_classes = [AllowAny]
     authentication_classes = [BasicAuthentication]
 
     def perform_create(self, serializer):
@@ -36,12 +39,22 @@ class PartitureViewsets(viewsets.ModelViewSet):
         partitura = serializer.save()
         partitura.get_notes()  # Ejecuta el procesamiento de notas después de actualizar la partitura
     
+    @action(detail=True, methods=['post'],url_path='generar_notas')
     def generar_notas(self, request, pk=None):
         try:
             partitura = self.get_object()
-            intervalo = request.data.get("invervalo", "M2")
+            intervalo = request.data.get("intervalo", "M2")
             partitura.get_notes(intervalo_transposicion=intervalo)
             return Response({'status': "Nota creada exitosamente"}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['get'],url_path='metadata')
+    def obtener_metadata(self, request, pk=None):
+        try:
+            partitura = self.get_object()
+            serializer = self.get_serializer(partitura)
+            return Response(serializer, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
