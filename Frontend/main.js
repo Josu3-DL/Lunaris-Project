@@ -8,7 +8,7 @@ import "./style.css"
 import { submit_file } from './src/pages/file.js';
 
 document.addEventListener("DOMContentLoaded", function() {
-    // login();
-    //register();
-    // submit_file();
+    //login();
+    // register();
+    submit_file();
 });

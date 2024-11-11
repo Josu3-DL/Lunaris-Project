@@ -1,4 +1,5 @@
-import { startRegistration } from "../api/auth";
+import { startLogin } from "../api/auth";
+
 
 export const login = () => {
     const loginElements = `
@@ -27,7 +28,7 @@ export const login = () => {
                                 </label>
                                 <input type="password" placeholder="Ingresa tu contraseña" id='password'>
                             </div>
-                            <button class="site-btn">Iniciar sesión</button>                                
+                            <button type='button' class="site-btn">Iniciar sesión</button>                                
                         </form>
                     </div>
                 </div>
@@ -38,14 +39,13 @@ export const login = () => {
     const app = document.querySelector('#app') 
     app.innerHTML = loginElements
 
-    const form = loginElements.querySelector('loginForm');
-    form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        // obtener valores de los formularios
+    const form = app.querySelector('#loginForm')
+    const loginButton = app.querySelector('.site-btn')
+        loginButton.addEventListener('click', () => {
         const username = form.querySelector('#username').value;
         const password = form.querySelector('#password').value;
+        startLogin(username, password)
 
-        startRegistration(username, password)//andar los valores)
     })
 }
 
