@@ -1,5 +1,7 @@
+import { startRegistration } from "../api/auth";
+
 export const login = () => {
-    document.querySelector('#app').innerHTML = `
+    const loginElements = `
 	<section class="contact-section">
 	<section class="contact-section h-100">
         <div class="container-fluid h-100">
@@ -9,21 +11,21 @@ export const login = () => {
                         <div class="section-title mb-0">
                             <h2 class="mb-3">Iniciar sesión</h2>
                         </div>
-                        <form class="contact-from d-flex flex-column align-items-center ">
+                        <form class="contact-from d-flex flex-column align-items-center " id='loginForm'>
                             
                             <div class="w-100 mb-3">
                                 <label>
                                     Nombre de usuario
                                     <span class="text-danger">*</span> 
                                 </label>
-                                <input type="text" placeholder="Ingresa tu nombre de usuario">
+                                <input type="text" placeholder="Ingresa tu nombre de usuario" id='username'>
                             </div>
                             <div class="w-100">
                                 <label>
                                     Contraseña
                                     <span class="text-danger">*</span> 
                                 </label>
-                                <input type="password" placeholder="Ingresa tu contraseña">
+                                <input type="password" placeholder="Ingresa tu contraseña" id='password'>
                             </div>
                             <button class="site-btn">Iniciar sesión</button>                                
                         </form>
@@ -33,4 +35,17 @@ export const login = () => {
         </div>
     </section>
 `
+    const app = document.querySelector('#app') 
+    app.innerHTML = loginElements
+
+    const form = loginElements.querySelector('loginForm');
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        // obtener valores de los formularios
+        const username = form.querySelector('#username').value;
+        const password = form.querySelector('#password').value;
+
+        startRegistration(username, password)//andar los valores)
+    })
 }
+
