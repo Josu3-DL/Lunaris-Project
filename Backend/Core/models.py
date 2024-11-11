@@ -1,12 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-# Create your models here.
-
-
-from django.db import models
 from music21 import converter, note, interval, chord
 
-# Create your models here.
 class Partitura(models.Model):
     titulo = models.CharField(max_length=100, null=False, blank=False)
     autor = models.CharField(max_length=100, null=True, blank=True)
@@ -14,14 +9,60 @@ class Partitura(models.Model):
     archivo = models.FileField(upload_to='partituras/', null=False, blank=False)
     notas_transpuestas = models.JSONField(null=True, blank=True)
     notas_normales = models.JSONField(null=True, blank=True)
-    user = models.ForeignKey(User,  on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     # nuevos campos
     time_signature = models.CharField(max_length=10, null=True, blank=True)
     key_signature = models.CharField(max_length=20, null=True, blank=True)  # se aumenta el max_length para mostrar mayor/menor
     clef = models.CharField(max_length=10, null=True, blank=True)
 
-    # función que se encarga de obtener tanto las notas transpuestas como las notas normales
+    # Función para convertir la duración a formato de letras de VexFlow
+    def duration_to_vexflow(self, duration):
+        if duration == 4.0:
+            return "w"
+        elif duration == 2.0:
+            return "h"
+        elif duration == 1.0:
+            return "q"
+        elif duration == 0.5:
+            return "8"
+        elif duration == 0.25:
+            return "16"
+        elif duration == 0.125:
+            return "32"
+        elif duration == 3.0:
+            return "h"  # Blanca con puntillo
+        elif duration == 0.0:
+            return "8"  # Nota de gracia como corchea
+        else:
+            return f"duración desconocida ({duration})"
+
+    # Función para determinar el accidental y si la nota está punteada
+    def get_note_attributes(self, n):
+        if n.pitch.accidental:
+            if n.pitch.accidental.name == "flat":
+                accidental = "b"
+            elif n.pitch.accidental.name == "sharp":
+                accidental = "#"
+            elif n.pitch.accidental.name == "natural":
+                accidental = "n"
+            else:
+                accidental = "none"
+        else:
+            accidental = "none"
+        
+        dotted = "dotted" if n.duration.dots > 0 else "none"
+        
+        return accidental, dotted
+
+    # Función para convertir el formato de la nota
+    def format_note_for_vexflow(self, note_name):
+        # Eliminar sostenidos y bemoles
+        if '#' in note_name or '-' in note_name:
+            note_name = note_name[0] + note_name[-1]
+        return note_name[0] + '/' + note_name[-1]
+
+    # Función que se encarga de obtener tanto las notas transpuestas como las notas normales
     def get_notes(self, intervalo_transposicion='M2'):
         # Cargar el archivo MusicXML
         score = converter.parse(self.archivo.path)
@@ -52,28 +93,34 @@ class Partitura(models.Model):
         notas_normales = []
         for element in score.recurse():
             if isinstance(element, note.Note):
+                accidental, dotted = self.get_note_attributes(element)
                 notas_normales.append({
-                    'nota': element.nameWithOctave,
-                    'duracion': element.quarterLength
+                    'nota': self.format_note_for_vexflow(element.nameWithOctave),
+                    'duracion': self.duration_to_vexflow(element.quarterLength),
+                    'accidental': accidental,
+                    'dotted': dotted
                 })
             elif isinstance(element, chord.Chord):
                 notas_normales.append({
-                    'nota': [n.nameWithOctave for n in element.notes],
-                    'duracion': element.quarterLength
+                    'nota': [self.format_note_for_vexflow(n.nameWithOctave) for n in element.notes],
+                    'duracion': self.duration_to_vexflow(element.quarterLength)
                 })
 
         # Extraer las notas transpuestas (incluyendo acordes)
         notas_transpuestas = []
         for element in transposed_score.recurse():
             if isinstance(element, note.Note):
+                accidental, dotted = self.get_note_attributes(element)
                 notas_transpuestas.append({
-                    'nota': element.nameWithOctave,
-                    'duracion': element.quarterLength
+                    'nota': self.format_note_for_vexflow(element.nameWithOctave),
+                    'duracion': self.duration_to_vexflow(element.quarterLength),
+                    'accidental': accidental,
+                    'dotted': dotted
                 })
             elif isinstance(element, chord.Chord):
                 notas_transpuestas.append({
-                    'nota': [n.nameWithOctave for n in element.notes],
-                    'duracion': element.quarterLength
+                    'nota': [self.format_note_for_vexflow(n.nameWithOctave) for n in element.notes],
+                    'duracion': self.duration_to_vexflow(element.quarterLength)
                 })
 
         # Guardar las notas y la metadata en los campos JSON
