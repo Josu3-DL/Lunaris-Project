@@ -11,21 +11,25 @@ transposed_score = score.transpose(interval)
 # Función para convertir la duración a formato de letras de VexFlow
 def duration_to_vexflow(duration):
     if duration == 4.0:
-        return "w"
+        return "w" #redonda
     elif duration == 2.0:
-        return "h"
+        return "h" #blanca
     elif duration == 1.0:
-        return "q"
+        return "q" #negra
     elif duration == 0.5:
-        return "8"
+        return "8" #corchea
     elif duration == 0.25:
-        return "16"
+        return "16" #semicorchea
     elif duration == 0.125:
-        return "32"
+        return "32" #fusa
+    elif duration == 0.0625:
+        return "64" #semifusa
     elif duration == 3.0:
         return "h"  # Blanca con puntillo
-    elif duration == 0.0:
-        return "r"
+    elif duration == 1.5:
+        return 'q'
+    elif duration == 2/3:
+        return "i"
     else:
         return f"duración desconocida ({duration})"
 
@@ -71,6 +75,7 @@ for n in transposed_notes:
     formatted_note = format_note_for_vexflow(n.nameWithOctave)
     print(f'Nota transpuesta: {formatted_note}, Duración: {duration_to_vexflow(n.quarterLength)}, Accidental: {accidental}, Puntillo: {dotted}')
 
-# Analizar y imprimir la tonalidad
+# Armadura de la partitura
 key = score.analyze('key')
+
 print(key)
