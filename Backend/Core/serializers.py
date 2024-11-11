@@ -9,6 +9,11 @@ class UserSerializer(serializers.ModelSerializer):
       model = User
       fields = ['username','email','password']
 
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return value
+
     def create(self, validated_data):
         user = User(
             email=validated_data['email'],
@@ -20,42 +25,46 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-      username = serializers.CharField(required=True)
-      password = serializers.CharField(required=True, write_only=True)
+    username_or_email = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
 
-      def validate(self, data):
-            username = data.get("username")
-            password = data.get("password")
+    def validate(self, data):
+        username_or_email = data.get("username_or_email")
+        password = data.get("password")
+        
+        if username_or_email and password:
+            # Intentar autenticar con nombre de usuario
+            user = User.objects.filter(username = username_or_email).first()
+            if not user:
+                user= User.objects.filter(email = username_or_email).first()
+                if not user:
+                    raise serializers.ValidationError("Invalid username or email")
             
-            if username and password:
-                  user = authenticate(username=username, password=password)
-                  if user:
-                        if not user.is_active:
-                              raise serializers.ValidationError("User account is disabled.")
-                  else:
-                        raise serializers.ValidationError("Invalid credentials.")
+            user = authenticate(username = user.username, password = password)
+            if user:
+               pass
             else:
-                  raise serializers.ValidationError("Must provide both username and password.")
-            
-            data["user"] = user
-            return data
-            
-      def create(self, validated_data):
-            user = validated_data['user']
-            refresh = RefreshToken.for_user(user)
-            return {
-            #si el acces token expira, refresh token
-            #envia un nuevo acces token para evitar un
-            #nuevo inicio de sesion
+                raise serializers.ValidationError("Invalid password.")
+        else:
+            raise serializers.ValidationError("Must provide both username or email and password.")
+        
+        data["user"] = user
+        return data
+
+
+    def create(self, validated_data):
+        user = validated_data['user']
+        refresh = RefreshToken.for_user(user)
+        return {
             'refresh': str(refresh),
             'access': str(refresh.access_token),
-            }
+        }
         
-class PartitureSetrializer(serializers.ModelSerializer):
+class PartitureSerializer(serializers.ModelSerializer):
       class Meta:
           model = Partitura
-          fields = ['titulo','autor','descripcion','archivo','user','time_signature','clef','key_signature']
-          readonlyfields = ['notas_transpuestas','notas_normales','time_signature','clef','key_signature']
+          fields = ['titulo','autor','descripcion','archivo','user','time_signature','clef','key_signature','notas_normales','notas_transpuestas']
+          read_only_fields = ['notas_transpuestas','notas_normales','time_signature','clef','key_signature']
           
       
       def create(self, validated_data):
