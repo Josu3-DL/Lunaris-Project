@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from music21 import converter, note, interval, chord
+from music21 import converter, note, interval
 
 class Partitura(models.Model):
     titulo = models.CharField(max_length=100, null=False, blank=False)
@@ -17,23 +17,25 @@ class Partitura(models.Model):
     clef = models.CharField(max_length=10, null=True, blank=True)
 
     # Función para convertir la duración a formato de letras de VexFlow
-    def duration_to_vexflow(self, duration):
-        if duration == 4.0:
-            return "w"
-        elif duration == 2.0:
-            return "h"
-        elif duration == 1.0:
-            return "q"
-        elif duration == 0.5:
-            return "8"
-        elif duration == 0.25:
-            return "16"
-        elif duration == 0.125:
-            return "32"
-        elif duration == 3.0:
-            return "h"  # Blanca con puntillo
+    def duration_to_vexflow(self, duration, is_rest=False):
+        if duration == 4.0 or duration == 6.0:
+            return "wr" if is_rest else "w"
+        elif duration == 2.0 or duration == 3.0:
+            return "hr" if is_rest else "h"
+        elif duration == 1.0 or duration == 1.5:
+            return "qr" if is_rest else "q"
+        elif duration == 0.5 or duration == 0.75:
+            return "8r" if is_rest else "8"
+        elif duration == 0.25 or duration == 0.375:
+            return "16r" if is_rest else "16"
+        elif duration == 0.125 or duration == 0.1875:
+            return "32r" if is_rest else "32"
+        elif duration == 0.0625 or duration == 0.09375:
+            return "64r" if is_rest else "64"
+        elif duration == 2/3:
+            return "ir" if is_rest else "i"
         elif duration == 0.0:
-            return "8"  # Nota de gracia como corchea
+            return "8r" if is_rest else "8"  # Nota de gracia como corchea
         else:
             return f"duración desconocida ({duration})"
 
@@ -89,38 +91,48 @@ class Partitura(models.Model):
         intervalo = interval.Interval(intervalo_transposicion)
         transposed_score = score.transpose(intervalo)
 
-        # Extraer las notas normales (incluyendo acordes)
+        # Extraer las notas normales (incluyendo silencios)
         notas_normales = []
         for element in score.recurse():
             if isinstance(element, note.Note):
                 accidental, dotted = self.get_note_attributes(element)
+                tie_type = element.tie.type if element.tie else 'none'
                 notas_normales.append({
                     'nota': self.format_note_for_vexflow(element.nameWithOctave),
                     'duracion': self.duration_to_vexflow(element.quarterLength),
                     'accidental': accidental,
-                    'dotted': dotted
+                    'dotted': dotted,
+                    'ligadura': tie_type
                 })
-            elif isinstance(element, chord.Chord):
+            elif isinstance(element, note.Rest):
                 notas_normales.append({
-                    'nota': [self.format_note_for_vexflow(n.nameWithOctave) for n in element.notes],
-                    'duracion': self.duration_to_vexflow(element.quarterLength)
+                    'nota': 'r',
+                    'duracion': self.duration_to_vexflow(element.quarterLength, is_rest=True),
+                    'accidental': 'none',
+                    'dotted': 'none',
+                    'ligadura': 'none'
                 })
 
-        # Extraer las notas transpuestas (incluyendo acordes)
+        # Extraer las notas transpuestas (incluyendo silencios)
         notas_transpuestas = []
         for element in transposed_score.recurse():
             if isinstance(element, note.Note):
                 accidental, dotted = self.get_note_attributes(element)
+                tie_type = element.tie.type if element.tie else 'none'
                 notas_transpuestas.append({
                     'nota': self.format_note_for_vexflow(element.nameWithOctave),
                     'duracion': self.duration_to_vexflow(element.quarterLength),
                     'accidental': accidental,
-                    'dotted': dotted
+                    'dotted': dotted,
+                    'ligadura': tie_type
                 })
-            elif isinstance(element, chord.Chord):
+            elif isinstance(element, note.Rest):
                 notas_transpuestas.append({
-                    'nota': [self.format_note_for_vexflow(n.nameWithOctave) for n in element.notes],
-                    'duracion': self.duration_to_vexflow(element.quarterLength)
+                    'nota': 'r',
+                    'duracion': self.duration_to_vexflow(element.quarterLength, is_rest=True),
+                    'accidental': 'none',
+                    'dotted': 'none',
+                    'ligadura': 'none'
                 })
 
         # Guardar las notas y la metadata en los campos JSON

@@ -1,0 +1,19 @@
+Cambia a la rama main:
+
+bash
+Copiar código
+git checkout main
+Usa el contenido de la rama backend en la carpeta Backend sin hacer merge directo: Ejecuta el siguiente comando, que realiza un "checkout temporal" de la rama backend en la carpeta Backend dentro de la rama main:
+
+bash
+Copiar código
+git --work-tree=Backend checkout backend -- .
+Este comando coloca los archivos de la rama backend en la carpeta Backend de la rama main sin necesidad de modificar la estructura en backend.
+
+Agrega y commitea los cambios en la rama main: Ahora, los archivos de backend están en la carpeta Backend. Para guardarlos en la rama main, sigue estos comandos:
+
+bash
+Copiar código
+git add Backend
+git commit -m "Agregar cambios de la rama backend en la carpeta Backend de main"
+Con estos pasos, los cambios de la rama backend estarán en la carpeta Backend dentro de la rama main sin alterar la estructura en backend.
