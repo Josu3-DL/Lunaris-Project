@@ -33,21 +33,20 @@ class PartitureViewsets(viewsets.ModelViewSet):
     authentication_classes = [BasicAuthentication]
 
     def perform_create(self, serializer):
-        partitura = serializer.save()
+        user = self.request.user
+        if not user.is_authenticated:
+            raise PermissionError('Usuario no autenticado')
+        
+        partitura = serializer.save(user = user)
         partitura.get_notes()  # Ejecuta el procesamiento de notas después de crear la partitura
 
     def perform_update(self, serializer):
+        user = self.request.user
+        if not user.is_authenticated:
+            raise PermissionError('Usuario no autenticado')
+        
         partitura = serializer.save()
         partitura.get_notes()  # Ejecuta el procesamiento de notas después de actualizar la partitura
-    
-    def convert_to_audio_view(request, partitura_id):
-        partitura = get_object_or_404(Partitura, id=partitura_id)
-        audio_file = partitura.convert_to_audio()
-
-        with open(audio_file, 'rb') as f:
-            response = HttpResponse(f.read(), content_type='audio/wav')
-            response['Content-Disposition'] = f'attachment; filename="{partitura.titulo}.wav"'
-            return response
 
     @action(detail=True, methods=['post'],url_path='generar_notas')
     def generar_notas(self, request, pk=None):

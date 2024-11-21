@@ -66,7 +66,7 @@ class Partitura(models.Model):
         return note_name[0] + '/' + note_name[-1]
 
     # Función que se encarga de obtener tanto las notas transpuestas como las notas normales
-    def get_notes(self, intervalo_transposicion='M2'):
+    def get_notes(self, intervalo_transposicion="M2"):
         # Cargar el archivo MusicXML
         score = converter.parse(self.archivo.path)
 
@@ -107,7 +107,7 @@ class Partitura(models.Model):
                 })
             elif isinstance(element, note.Rest):
                 notas_normales.append({
-                    'nota': 'r',
+                    'nota': 'F/3',
                     'duracion': self.duration_to_vexflow(element.quarterLength, is_rest=True),
                     'accidental': 'none',
                     'dotted': 'none',
@@ -129,7 +129,7 @@ class Partitura(models.Model):
                 })
             elif isinstance(element, note.Rest):
                 notas_transpuestas.append({
-                    'nota': 'r',
+                    'nota': 'F/3',
                     'duracion': self.duration_to_vexflow(element.quarterLength, is_rest=True),
                     'accidental': 'none',
                     'dotted': 'none',
@@ -161,17 +161,4 @@ class Partitura(models.Model):
     def __str__(self):
         return self.titulo
     
-    def convert_to_audio(self):
-        # Cargar el archivo MusicXML
-        score = converter.parse(self.archivo.path)
-
-        # Convertir a MIDI
-        midi_file = score.write('midi', fp='output.mid')
-
-        # Convertir MIDI a audio usando un archivo SoundFont
-        soundfont_path = 'static/soundfont/FluidR3_GM.sf2'  # Ruta al archivo SoundFont en tu servidor
-        fs = FluidSynth(soundfont_path)
-        audio_file = self.archivo.path.replace('.mxl', '.wav')
-        fs.midi_to_audio(midi_file, audio_file)
-
-        return audio_file
+   

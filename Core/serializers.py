@@ -63,7 +63,7 @@ class LoginSerializer(serializers.Serializer):
 class PartitureSerializer(serializers.ModelSerializer):
       class Meta:
           model = Partitura
-          fields = ['titulo','autor','descripcion','archivo','user','time_signature','clef','key_signature','notas_normales','notas_transpuestas']
+          fields = ['titulo','autor','descripcion','archivo','time_signature','clef','key_signature','notas_normales','notas_transpuestas']
           read_only_fields = ['notas_transpuestas','notas_normales','time_signature','clef','key_signature']
           
       
