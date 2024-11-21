@@ -11,6 +11,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny 
 from rest_framework.decorators import action
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404,HttpResponse
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -28,7 +29,7 @@ class PartitureViewsets(viewsets.ModelViewSet):
     queryset = Partitura.objects.all()
     serializer_class = PartitureSerializer
     #permission_classes = [IsAuthenticated] 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     authentication_classes = [BasicAuthentication]
 
     def perform_create(self, serializer):
@@ -39,6 +40,15 @@ class PartitureViewsets(viewsets.ModelViewSet):
         partitura = serializer.save()
         partitura.get_notes()  # Ejecuta el procesamiento de notas después de actualizar la partitura
     
+    def convert_to_audio_view(request, partitura_id):
+        partitura = get_object_or_404(Partitura, id=partitura_id)
+        audio_file = partitura.convert_to_audio()
+
+        with open(audio_file, 'rb') as f:
+            response = HttpResponse(f.read(), content_type='audio/wav')
+            response['Content-Disposition'] = f'attachment; filename="{partitura.titulo}.wav"'
+            return response
+
     @action(detail=True, methods=['post'],url_path='generar_notas')
     def generar_notas(self, request, pk=None):
         try:

@@ -2,7 +2,7 @@ from music21 import converter, note, chord
 from music21.note import Rest
 
 # Cargar el archivo MusicXML
-score = converter.parse('HimnoNacional.mxl')
+score = converter.parse('Klishmannb_practice_3.mxl')
 
 # Transponer el score
 interval = 'M2'  # Intervalo de transposición, por ejemplo, una segunda mayor

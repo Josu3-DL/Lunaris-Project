@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from music21 import converter, note, interval
+from midi2audio import FluidSynth
 
 class Partitura(models.Model):
     titulo = models.CharField(max_length=100, null=False, blank=False)
@@ -159,3 +160,18 @@ class Partitura(models.Model):
 
     def __str__(self):
         return self.titulo
+    
+    def convert_to_audio(self):
+        # Cargar el archivo MusicXML
+        score = converter.parse(self.archivo.path)
+
+        # Convertir a MIDI
+        midi_file = score.write('midi', fp='output.mid')
+
+        # Convertir MIDI a audio usando un archivo SoundFont
+        soundfont_path = 'static/soundfont/FluidR3_GM.sf2'  # Ruta al archivo SoundFont en tu servidor
+        fs = FluidSynth(soundfont_path)
+        audio_file = self.archivo.path.replace('.mxl', '.wav')
+        fs.midi_to_audio(midi_file, audio_file)
+
+        return audio_file
