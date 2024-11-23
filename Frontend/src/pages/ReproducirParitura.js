@@ -1,3 +1,5 @@
+import * as Tone from "tone";
+
 const synth = new Tone.Synth().toDestination();
 Tone.Destination.volume.value = 6;
 Tone.Transport.bpm.value = 90;

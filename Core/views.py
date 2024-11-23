@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404,HttpResponse,render
 from music21 import converter, tempo
 from midi2audio import FluidSynth
 from django.conf import settings
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -32,8 +33,7 @@ class UserViewsets(viewsets.ModelViewSet):
 class PartitureViewsets(viewsets.ModelViewSet):
     queryset = Partitura.objects.all()
     serializer_class = PartitureSerializer
-    permission_classes = [IsAuthenticated] 
-    authentication_classes = [BasicAuthentication]
+    permission_classes  = [IsAuthenticated]
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -41,7 +41,7 @@ class PartitureViewsets(viewsets.ModelViewSet):
             raise PermissionError('Usuario no autenticado')
         
         # Validar el archivo antes de guardarlo
-        archivo = self.request.FILES.get('archivo')  # Asegúrate de que 'archivo' sea el nombre correcto del campo en el formulario
+        archivo = self.request.FILES.get('file')  # Asegúrate de que 'archivo' sea el nombre correcto del campo en el formulario
         if archivo:
             # Validar la extensión del archivo
             valid_extensions = ['.xml', '.mxl', '.musicxml', '.mid']

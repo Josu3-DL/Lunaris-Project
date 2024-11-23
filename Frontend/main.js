@@ -11,6 +11,8 @@ import page from "//unpkg.com/page/page.mjs";
 
 import Navigo from 'navigo';
 import { router } from './src/router/router.js';
+import { Render_partitura } from './src/pages/RenderizarPartitura.js';
+import { partitureGame } from './src/pages/PracticarPartitura.js';
 
 router.on({
   '/': () => {
@@ -24,5 +26,11 @@ router.on({
     // Lógica para la ruta "contact"
     login();
   },
+    '/render': () => {
+      Render_partitura();
+  },
+  '/practicas': () => {
+    partitureGame();
+  }
 }).resolve();
     

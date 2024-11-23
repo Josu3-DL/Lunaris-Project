@@ -82,6 +82,7 @@ class Partitura(models.Model):
         if key_signature:
             # Guardar la tonalidad con el nombre musical (mayor/menor)
             self.key_signature = f"{key_signature.tonic.name} {key_signature.mode}"
+            self.key_signature = self.key_signature.replace("-", "b")
 
         # Obtener la clave (clef)
         clefs = score.recurse().getElementsByClass('Clef')

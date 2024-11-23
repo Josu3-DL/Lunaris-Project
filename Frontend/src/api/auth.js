@@ -51,11 +51,42 @@ export const startRegister = async(email, username, password) => {
     }
 }
 
-export const SendFile = async(titulo, autor, descripcion, archivo) => {
+export const SendFile = async (formData) => {
     try {
-        const { data } = await lunarisaApi.post('/api/partiture/', { titulo: "Mi Partitura", autor: "Anonimo", descripcion: "Sin descripcion", archivo })
-        console.log(data)
+        const response = await lunarisaApi.post('/api/partiture/', formData, {
+            headers: { 
+                'Content-Type': 'multipart/form-data'  // Opcional, axios lo configura automáticamente
+            }
+        });
+        console.log(response.data);
+        localStorage.setItem("PartitureData", JSON.stringify(response.data));
+        console.log("Archivo enviado correctamente");
     } catch (error) {
-        console.log(error)
+        console.error("Error al enviar el archivo:", error);
+    }
+};
+
+export const DownloadAudio = async (id) => {
+    try {
+        const response = await lunarisaApi.post(`api/partiture/${id}/convertir_audio/`, null, {
+            responseType: "blob"
+        })
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a")
+
+        link.href = url;
+        link.download = `partitura_${id}.wav`;
+        link.click();
+        window.URL.revokeObjectURL(url)
+
+        Swal.fire({
+            title: 'Descarga completa ',
+            text: "Escuchar audio",
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          })
+    
+    } catch (error) {
+        console.log("Error", error)
     }
 }

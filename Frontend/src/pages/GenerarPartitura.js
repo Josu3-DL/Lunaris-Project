@@ -1,3 +1,6 @@
+import * as Tone from "tone";
+import Vex from "vexflow";
+
 const synth = new Tone.Synth().toDestination();
 Tone.Destination.volume.value = 6;
 Tone.Transport.bpm.value = 90; // Ajusta el tempo global (por ejemplo, 60 BPM)
@@ -109,11 +112,9 @@ function obtenerValorDuracion(duracion, dotted) {
 }
 
 function generarPartitura(jsonData, NotasTranspuestas) {
-  return new Promise((resolve) => {
-    const lineas = {};
-    /* global VexFlow */
-    VexFlow.loadFonts("Bravura", "Academico").then(() => {
-      VexFlow.setFonts("Bravura", "Academico");
+  return new Promise((resolve, reject) => {
+    try {
+      const lineas = {};
 
       // Elegir las notas a usar según la configuración
       const notasUsadas = NotasTranspuestas
@@ -121,7 +122,7 @@ function generarPartitura(jsonData, NotasTranspuestas) {
         : jsonData["notas_normales"];
 
       const outputDiv = document.getElementById("output");
-      const containerWidth = outputDiv.offsetWidth - 20;
+      const containerWidth = outputDiv.offsetWidth;
       const numCompases = dividirEnCompases(
         notasUsadas,
         parseInt(jsonData["time_signature"].split("/")[0])
@@ -129,7 +130,7 @@ function generarPartitura(jsonData, NotasTranspuestas) {
       const containerHeight =
         calcularSaltosDeLinea(numCompases, containerWidth) * 150;
 
-      const { Factory, Accidental, Dot } = VexFlow;
+      const { Factory, Accidental, Dot } = Vex.Flow;
 
       // Variables para controlar el lugar de construcción de compases
       let lugarX = 0,
@@ -237,7 +238,7 @@ function generarPartitura(jsonData, NotasTranspuestas) {
       const vf = new Factory({
         renderer: {
           elementId: "output",
-          width: containerWidth - 20,
+          width: containerWidth,
           height: containerHeight,
         },
       });
@@ -348,10 +349,11 @@ function generarPartitura(jsonData, NotasTranspuestas) {
         lineas[linea]["tiempoTotal"] = tiempoTotal;
       });
 
-      vf.draw();
-
       resolve(lineas);
-    });
+      vf.draw();
+    } catch {
+      reject(error);
+    }
   });
 }
 
