@@ -1,0 +1,19 @@
+Subir medio tono: m2
+Bajar medio tono: -m2
+Subir un tono completo: M2
+Bajar un tono completo: -M2
+
+Unísono Perfecto (P1)
+Segunda Menor (m2)
+Segunda Mayor (M2)
+Tercera Menor (m3)
+Tercera Mayor (M3)
+Cuarta Justa (P4)
+Cuarta Aumentada (A4) o Quinta Disminuida (d5)
+Quinta Justa (P5)
+Sexta Menor (m6)
+Sexta Mayor (M6)
+Séptima Menor (m7)
+Séptima Mayor (M7)
+Octava Perfecta (P8)
+
