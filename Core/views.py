@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404,HttpResponse,render
 from music21 import converter, tempo
 from midi2audio import FluidSynth
-
+from django.conf import settings
 
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
@@ -44,7 +44,7 @@ class PartitureViewsets(viewsets.ModelViewSet):
         archivo = self.request.FILES.get('archivo')  # Asegúrate de que 'archivo' sea el nombre correcto del campo en el formulario
         if archivo:
             # Validar la extensión del archivo
-            valid_extensions = ['.xml', '.mxl', '.musicxml', '.midi']
+            valid_extensions = ['.xml', '.mxl', '.musicxml', '.mid']
             file_extension = os.path.splitext(archivo.name)[1].lower()
 
             if file_extension not in valid_extensions:
@@ -62,7 +62,7 @@ class PartitureViewsets(viewsets.ModelViewSet):
         archivo = self.request.FILES.get('archivo')  # Asegúrate de que 'archivo' sea el nombre correcto del campo en el formulario
         if archivo:
             # Validar la extensión del archivo
-            valid_extensions = ['.xml', '.mxl', '.musicxml', '.midi']
+            valid_extensions = ['.xml', '.mxl', '.musicxml', '.mid']
             file_extension = os.path.splitext(archivo.name)[1].lower()
         
         partitura = serializer.save(user = user)
@@ -91,27 +91,24 @@ class PartitureViewsets(viewsets.ModelViewSet):
             default_tempo = tempo.MetronomeMark(number=90)
             score.insert(0, default_tempo)
 
+              # Crear la carpeta de destino si no existe
+            audio_dir = os.path.join(settings.MEDIA_ROOT, 'audio')
+            os.makedirs(audio_dir, exist_ok=True)
+
             # Guardar el archivo MIDI
-            midi_file = 'output.mid'
+            midi_file = os.path.join(audio_dir, 'output.mid')
             score.write('midi', fp=midi_file)
 
             # Verificar si el archivo MIDI se generó correctamente
             if not os.path.exists(midi_file):
                 return Response({'error': 'El archivo MIDI no fue generado correctamente.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            
             # Convertir MIDI a WAV usando FluidSynth
             soundfont = 'Core\static\Core\soundfont\MS_Basic.sf3'  # Ruta al archivo SoundFont
             if not os.path.exists(soundfont):
                 return Response({'error': 'El archivo SoundFont no se encuentra en la ruta especificada.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Obtener el nombre del archivo original de la partitura
-            '''
-            archivo_nombre = os.path.basename(input_file)
-            nombre_sin_extension, _ = os.path.splitext(archivo_nombre)
-            '''
-
-            audio_file_wav = f'{partitura.titulo}.wav'
+            audio_file_wav =  os.path.join(audio_dir, f'{partitura.titulo}.wav')
             fs = FluidSynth(soundfont)
             fs.midi_to_audio(midi_file, audio_file_wav)
 

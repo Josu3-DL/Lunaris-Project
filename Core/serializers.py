@@ -22,7 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
-
+    
 
 class LoginSerializer(serializers.Serializer):
     username_or_email = serializers.CharField(required=True)
